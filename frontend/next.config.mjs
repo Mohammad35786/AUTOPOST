@@ -2,15 +2,17 @@
 const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
-    // Skip rewrites when running locally with a local backend
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "https://auto-poster-backend-production.up.railway.app";
-    if (backendUrl.startsWith("http://localhost")) {
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://localhost:8000";
+    if (backendUrl.startsWith("http://localhost") || backendUrl.startsWith("http://127.0.0.1")) {
       return [];
     }
     return [
       {
         source: "/backend/:path*",
-        destination: `${backendUrl}/:path*`,
+        destination: `${backendUrl.replace(/\/$/, "")}/:path*`,
       },
     ];
   },

@@ -15,6 +15,7 @@ import httpx
 
 from app.config import (
     ANTHROPIC_API_KEY,
+    FRONTEND_URL,
     GEMINI_API_KEY,
     GEMINI_MODEL,
     MISTRAL_API_BASE_URL,
@@ -478,7 +479,7 @@ def _generate_openrouter(
         f"{OPENROUTER_API_BASE_URL.rstrip('/')}/chat/completions",
         headers={
             "Authorization": f"Bearer {effective_key}",
-            "HTTP-Referer": "https://autopost-woad.vercel.app",
+            "HTTP-Referer": FRONTEND_URL,
             "X-Title": "AutoPoster AI",
         },
         json=payload,

@@ -3,15 +3,15 @@
  *
  * WHY THIS FILE EXISTS:
  * ---------------------
- * Railway spins down inactive deployments. The first request after a cold
+ * Render spins down inactive deployments. The first request after a cold
  * start can take 60-90 seconds. A default 5-10 s timeout would cause silent
  * failures. We set 120 s here so that the backend has time to boot before the
  * request is abandoned.
  *
- * BASE URL RESOLUTION ORDER:
+ * BASE URL RESOLUTION (see env.ts):
  *   1. NEXT_PUBLIC_API_URL  (canonical — set this one)
  *   2. NEXT_PUBLIC_BACKEND_URL  (legacy alias, kept for backward-compat)
- *   3. Hard-coded Render fallback  (safety net — should never be needed in prod)
+ *   3. http://localhost:8000  (local dev default when env vars are unset)
  *
  * TOKEN STORAGE KEY:
  *   Defined once here and imported everywhere so a key rename is a one-line
@@ -21,7 +21,7 @@
 
 import axios from "axios"
 
-const FALLBACK_BACKEND = "https://auto-poster-backend-production.up.railway.app"
+import { getBackendUrl } from "./env"
 
 /**
  * Single source of truth for the localStorage key that stores the JWT.
@@ -30,14 +30,7 @@ const FALLBACK_BACKEND = "https://auto-poster-backend-production.up.railway.app"
 export const TOKEN_STORAGE_KEY = "auth_token"
 
 function resolveBaseUrl(): string {
-  // Prefer the new canonical variable; fall back to the legacy alias.
-  const url =
-    process.env.NEXT_PUBLIC_API_URL ||
-    process.env.NEXT_PUBLIC_BACKEND_URL ||
-    FALLBACK_BACKEND
-
-  // Strip trailing slash so paths like /auth/login work without double-slashes.
-  return url.replace(/\/$/, "")
+  return getBackendUrl()
 }
 
 /**
@@ -49,7 +42,7 @@ function resolveBaseUrl(): string {
 export const axiosInstance = axios.create({
   baseURL: resolveBaseUrl(),
 
-  // 120 s — Railway cold starts can take 60-90 s. We give extra headroom so
+  // 120 s — Render free-tier cold starts can take 60-90 s. We give extra headroom so
   // the backend has time to boot before we give up and show the error banner.
   // Individual call sites can still pass { timeout: N } to override per-request.
   timeout: 120_000,

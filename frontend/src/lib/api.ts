@@ -15,10 +15,10 @@ TIMEOUT CONFIGURATION:
   free-tier cold starts which can take 30-60 s.
 - Defined in axios.ts; this file only adds response interceptors.
 
-BACKEND URL RESOLUTION (see axios.ts for full logic):
+BACKEND URL RESOLUTION (see env.ts / axios.ts):
 - NEXT_PUBLIC_API_URL        (canonical — set this in .env.local / Vercel)
 - NEXT_PUBLIC_BACKEND_URL    (legacy alias)
-- https://auto-poster-backend-production.up.railway.app  (hard-coded fallback)
+- http://localhost:8000      (default when env vars are unset)
 
 RESPONSE INTERCEPTORS (this file):
 1. X-New-Token header — transparently rotates the stored token.
@@ -28,6 +28,7 @@ RESPONSE INTERCEPTORS (this file):
 
 import { isAxiosError } from "axios"
 import { axiosInstance, TOKEN_STORAGE_KEY } from "./axios"
+import { getBackendUrl } from "./env"
 
 // Re-export helpers so consumers can import from a single place
 export { axiosInstance as api }
@@ -36,10 +37,10 @@ export const API_BASE_URL: string = (axiosInstance.defaults.baseURL as string) ?
 export function getBackendOrigin(): string {
   const base = axiosInstance.defaults.baseURL as string | undefined
   if (base?.startsWith("http")) return base
-  return "https://auto-poster-backend-production.up.railway.app"
+  return getBackendUrl()
 }
 
-export const BACKEND_ORIGIN = typeof window !== "undefined" ? getBackendOrigin() : "https://auto-poster-backend-production.up.railway.app"
+export const BACKEND_ORIGIN = typeof window !== "undefined" ? getBackendOrigin() : getBackendUrl()
 
 export function getApiErrorMessage(error: unknown, fallback: string): string {
   if (!isAxiosError(error)) {
