@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 # Load design system resources to build the prompt dynamically
 import os
 
-RESOURCES_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "..", "design-resources")
+RESOURCES_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "design-system")
 
 def load_json_resource(filename: str) -> list:
     try:
